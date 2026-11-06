@@ -27,6 +27,26 @@
 @media(max-width:650px){.quicklinks{grid-template-columns:1fr 1fr}.quicklink{padding:12px}.workspace-top{margin:0 -12px;padding:9px 12px}.crumb{font-size:12px}}
 @media print{.side-nav,.workspace-top,.nav-backdrop{display:none!important}.workspace{display:block}}
 </style>
+<style>
+/* Compact financial workspace: an always-readable result bar with progressive detail. */
+#finance .section-head{margin-bottom:12px}
+.fin-results{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0 14px}
+.fin-results>div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px;box-shadow:var(--shadow);min-width:0}
+.fin-results .kicker{font-size:11px;line-height:1.3;min-height:29px}.fin-results .metric{font-size:clamp(18px,2vw,27px);margin:5px 0 0;overflow-wrap:anywhere}
+.fin-results .fin-hidden{display:none}.fin-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;align-items:start}
+.fin-stack{display:grid;gap:13px;min-width:0}.fin-stack>.card{margin:0;grid-column:auto;min-width:0}
+.fin-card-heading{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-bottom:10px}.fin-card-heading h3{margin:0}
+.fin-stack .fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.fin-stack .field span{font-size:11px}.fin-stack .field input,.fin-stack .field select{padding:8px 9px}
+.fin-stack .money{margin-top:10px}.fin-stack .money>div{padding:11px}.fin-stack .money .metric{font-size:22px}
+.fin-extra{border:1px solid var(--line);background:#f8fbfc;border-radius:11px;padding:10px 12px;margin-top:12px}.fin-extra>summary{font-weight:800;cursor:pointer;font-size:13px;color:#225e72}
+.fin-extra[open]>summary{margin-bottom:12px}.fin-extra .fields{margin:5px 0}.fin-payroll-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.fin-notes{margin-top:14px}.fin-notes>.card{margin:0}.fin-notes details>summary{font-weight:850;font-size:14px;cursor:pointer}
+.fin-period{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.fin-period label{font-size:12px;font-weight:800;color:#567280}.fin-period select{background:#fff;border:1px solid #cbdde1;border-radius:10px;padding:8px 11px;min-width:112px}
+@media(max-width:1050px){.fin-layout{grid-template-columns:minmax(0,1fr)}.fin-results{grid-template-columns:repeat(2,minmax(0,1fr))}.fin-results .kicker{min-height:0}}
+@media(max-width:650px){#finance .fin-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.fin-results>div{padding:10px}.fin-results .metric{font-size:21px}.fin-stack .fields{grid-template-columns:1fr 1fr}.fin-card-heading{align-items:flex-start}.fin-period{justify-content:flex-end}.fin-stack .card{padding:14px}.fin-payroll-fields{grid-template-columns:1fr 1fr!important}}
+@media(max-width:380px){.fin-stack .fields{grid-template-columns:1fr}.fin-payroll-fields{grid-template-columns:1fr 1fr!important}}
+@media print{.fin-extra{display:block}.fin-extra>*{display:block}.fin-layout{display:block}.fin-results{display:grid}}
+</style>
 </head>
 <body><div class="shell">
 <header class="header"><div class="header-row"><div><div class="eyebrow">Parrish, Florida · Family business planning</div><h1>Day-Care Project Hub</h1><p>A working plan for a bilingual English–Spanish early learning center. Track decisions, prepare for Florida licensing, and test assumptions before committing to a property or financing.</p></div><div class="header-actions"><span class="pill">Planning · Not licensed</span><div class="language-switch no-print" role="group" aria-label="Language / Idioma"><button class="lang-option" data-language="en" aria-pressed="true">English</button><button class="lang-option" data-language="es" aria-pressed="false">Español</button></div></div></div></header>
@@ -271,5 +291,41 @@ overview.insertBefore(quick,cards[4]||null);
 quick.addEventListener('click',e=>{const b=e.target.closest('[data-jump]');if(!b)return;$('.side-nav .tab[data-tab="'+b.dataset.jump+'"]').click()});
 const readiness=document.createElement('article');readiness.className='card span-12';readiness.innerHTML='<div class="spread"><h3>Bank-readiness and feasibility gaps</h3><span class="pill warn">Evidence needed</span></div><p class="hint">These are not completed requirements. Use them to prioritize verification before seeking funding.</p><ul class="status-list"><li><span>Monthly cash-flow ramp, reserves and downside scenario</span><span class="pill warn">Open</span></li><li><span>Age-group enrollment, classroom ratios and staffing coverage</span><span class="pill warn">Open</span></li><li><span>Local parent demand and competitor tuition validation</span><span class="pill warn">Open</span></li><li><span>Contractor, property, insurance and technology quotations</span><span class="pill warn">Open</span></li><li><span>Ownership, director qualifications and financing documentation</span><span class="pill warn">Open</span></li></ul><div class="callout">Shared-site note: browser edits are saved locally on each device. Use Export / Import to exchange planning updates with Mariana; a real shared data system has not been built.</div>';
 overview.insertBefore(readiness,overview.lastElementChild);
+})();
+</script>
+<script>
+/* Compact financial page without replacing fields or calculations. */
+(()=>{'use strict';
+const finance=document.querySelector('#finance');if(!finance)return;
+const outer=finance.querySelector(':scope > .grid');const scenario=outer?.querySelector(':scope > .card');const age=document.querySelector('#ageStaffSummary')?.closest('.card');const payroll=document.querySelector('#staffFields')?.closest('.card');const notes=outer?.querySelector('[data-tasks="financial"]')?.closest('.card');const money=scenario?.querySelector('.money');const period=document.querySelector('#billingPeriod');if(!outer||!scenario||!age||!payroll||!notes||!money||!period)return;
+const header=finance.querySelector('.section-head');const periodHolder=period.closest('.field');const row=document.createElement('div');row.className='fin-card-heading';row.innerHTML='<div><h3 style="margin-bottom:3px">Financial snapshot</h3><p class="hint" style="margin:0">Values update as you change enrollment, tuition, staffing and wages.</p></div>';
+const periodBar=document.createElement('div');periodBar.className='fin-period';periodBar.innerHTML='<label for="billingPeriod">Tuition rate entered as</label>';periodBar.append(period);row.append(periodBar);header.after(row);
+periodHolder?.remove();
+money.className='fin-results';row.after(money);
+const metricIds=['weeklyRevenue','weeklyExpense','weeklyProfit','monthlyRevenue','monthlyExpense','monthlyProfit','mBreak'];const metricLabels={weeklyRevenue:'Weekly income',weeklyExpense:'Weekly expenses',weeklyProfit:'Weekly result',monthlyRevenue:'Monthly income',monthlyExpense:'Monthly expenses',monthlyProfit:'Monthly result',mBreak:'Break-even children'};
+money.querySelectorAll(':scope > div').forEach(d=>d.classList.add('fin-hidden'));
+metricIds.forEach(id=>{const element=document.getElementById(id);if(element){const parent=element.parentElement;parent.querySelector('.kicker').textContent=metricLabels[id];parent.classList.add('fin-result-item')}});
+function updatePeriod(){const week=period.value==='weekly';['weeklyRevenue','weeklyExpense','weeklyProfit','monthlyRevenue','monthlyExpense','monthlyProfit','mBreak'].forEach(id=>{const el=document.getElementById(id);if(el)el.parentElement.classList.toggle('fin-hidden',id!=='mBreak'&&!id.startsWith(week?'weekly':'monthly'))})}
+period.addEventListener('input',updatePeriod);period.addEventListener('change',updatePeriod);updatePeriod();
+const layout=document.createElement('div');layout.className='fin-layout';const left=document.createElement('div');left.className='fin-stack';const right=document.createElement('div');right.className='fin-stack';layout.append(left,right);money.after(layout);left.append(scenario,age);right.append(payroll);
+const startup=scenario.querySelector('[data-model="startup"]')?.closest('.field');if(startup){startup.hidden=true;startup.style.display='none'}
+const scenarioFields=scenario.querySelector('.fields');scenarioFields?.classList.add('fin-payroll-fields');
+scenario.querySelector('h3').textContent='1. Tuition and enrollment';scenario.querySelector('.hint')?.remove();
+const ageSummary=age.querySelector('#ageStaffSummary');const control=age.querySelector('#autoStaff')?.closest('.checkrow');const ageFields=age.querySelector('#ageMixFields');const coverage=age.querySelector('#coveragePct')?.closest('.fields');const ageTable=age.querySelector('table')?.closest('.tablewrap');const ageHints=[...age.querySelectorAll('p.hint')];const detail=document.createElement('details');detail.className='fin-extra';detail.innerHTML='<summary>Adjust age mix and coverage</summary>';
+if(ageFields)detail.append(ageFields);if(coverage)detail.append(coverage);if(ageTable)detail.append(ageTable);ageHints.slice(1).forEach(h=>detail.append(h));ageSummary.after(detail);
+const ageHeading=age.querySelector('h3');if(ageHeading)ageHeading.textContent='2. Children by age and staffing';const ageP=age.querySelector('.spread .hint');if(ageP)ageP.textContent='Enrollment determines staffing. Expand the age mix to change the assumptions.';
+if(control)control.style.marginTop='8px';
+const payHeading=payroll.querySelector('h3');if(payHeading)payHeading.textContent='3. Wages and payroll';
+const payIntro=payroll.querySelector('p.hint');if(payIntro)payIntro.textContent='Teacher counts are linked to enrolled children. Adjust hourly wages, paid hours, management salaries and overhead below.';
+const staffFields=payroll.querySelector('#staffFields');staffFields.classList.add('fin-payroll-fields');
+const payMoney=payroll.querySelector('.money');const staffAdvanced=document.createElement('details');staffAdvanced.className='fin-extra';staffAdvanced.innerHTML='<summary>Edit pay rates, hours and family management</summary>';staffAdvanced.append(staffFields);payMoney.before(staffAdvanced);
+const payrollCountFields=['lead','assistant'];payrollCountFields.forEach(k=>{const inp=staffAdvanced.querySelector('[data-staff-key="'+k+'"]');if(inp){const copy=document.createElement('div');copy.className='field';copy.style.padding='8px 0';copy.innerHTML='<span>'+ (k==='lead'?'Lead teachers':'Assistant teachers') +'</span><strong data-count-display="'+k+'">'+inp.value+'</strong>';staffAdvanced.before(copy)}});
+const updateCounts=()=>payrollCountFields.forEach(k=>{const inp=staffAdvanced.querySelector('[data-staff-key="'+k+'"]'),value=payroll.querySelector('[data-count-display="'+k+'"]');if(inp&&value)value.textContent=inp.value});
+document.querySelectorAll('[data-model="enrollment"], [data-age-index], [data-staff-key], #autoStaff, #coveragePct').forEach(el=>el.addEventListener('input',updateCounts));updateCounts();
+const notesWrap=document.createElement('div');notesWrap.className='fin-notes';const notesDetails=document.createElement('details');notesDetails.className='fin-extra';notesDetails.innerHTML='<summary>Research checklist, quotes and financial notes</summary>';notesDetails.append(notes);notesWrap.append(notesDetails);layout.after(notesWrap);
+const oldSummary=scenario.querySelector('p.hint');if(oldSummary)oldSummary.textContent='Illustrative operating result only. Loan payments, enrollment ramp and cash reserves are evaluated separately in the business plan.';
+const strings={'Financial snapshot':'Resumen financiero','Values update as you change enrollment, tuition, staffing and wages.':'Los resultados se actualizan al cambiar matrícula, cuotas, personal y sueldos.','Tuition rate entered as':'Cuota ingresada como','Weekly income':'Ingreso semanal','Weekly expenses':'Gastos semanales','Weekly result':'Resultado semanal','Monthly income':'Ingreso mensual','Monthly expenses':'Gastos mensuales','Monthly result':'Resultado mensual','Break-even children':'Niños para cubrir gastos','1. Tuition and enrollment':'1. Matrícula y cuotas','2. Children by age and staffing':'2. Niños por edad y personal','3. Wages and payroll':'3. Sueldos y nómina','Adjust age mix and coverage':'Ajustar edades y cobertura','Edit pay rates, hours and family management':'Editar sueldos, horas y dirección familiar','Research checklist, quotes and financial notes':'Lista de investigación, cotizaciones y notas','Teacher counts are linked to enrolled children. Adjust hourly wages, paid hours, management salaries and overhead below.':'La cantidad de docentes depende de los niños matriculados. Ajusta salarios, horas, dirección y cargas.','Enrollment determines staffing. Expand the age mix to change the assumptions.':'La matrícula determina el personal. Abre la distribución por edades para cambiar los supuestos.'};
+const originals=new WeakMap();function translateFinance(){const es=document.documentElement.lang==='es',walk=document.createTreeWalker(finance,NodeFilter.SHOW_TEXT);let n;while(n=walk.nextNode()){if(n.parentElement?.closest('script,style,textarea'))continue;const source=originals.get(n)||n.nodeValue,k=source.trim();if(!Object.prototype.hasOwnProperty.call(strings,k))continue;if(!originals.has(n))originals.set(n,source);n.nodeValue=source.replace(k,es?strings[k]:k)}}
+document.querySelectorAll('[data-language]').forEach(b=>b.addEventListener('click',()=>setTimeout(translateFinance,10)));translateFinance();
 })();
 </script></body></html>
